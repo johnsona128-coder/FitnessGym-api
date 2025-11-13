@@ -9,8 +9,6 @@ DB\_USER=root
 DB\_PASSWORD=\[Insert your password]
 DB\_NAME=gym\_tracker
 
-
-
 4. From your terminal window run this
 
 npm install express mysql2 dotenv cors
