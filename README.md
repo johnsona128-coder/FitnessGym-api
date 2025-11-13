@@ -16,7 +16,7 @@ npm install express --save
 
 
 
-5. Not go to you browser and verify that you have a functional API.
+5. Now go to you browser and verify that you have a functional API.
 
 http://localhost:3001 -- Should return a health check page.
 
