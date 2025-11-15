@@ -7,8 +7,13 @@ const app = express();
 
 // Import routes
 const indexRouter = require('./routes/index');
-const testDatabaseRouter = require('./routes/test');
-
+const exercisesRouter = require('./routes/exercise/exercises');
+const musclesRouter = require('./routes/exercise/muscles');
+const forceTypesRouter = require('./routes/exercise/forceTypes');
+const levelsRouter = require('./routes/exercise/levels');
+const mechanicsRouter = require('./routes/exercise/mechanics');
+const equipmentRouter = require('./routes/exercise/equipment');
+const categoriesRouter = require('./routes/exercise/categories');
 
 // Middleware
 app.use(cors());
@@ -17,8 +22,13 @@ app.use(express.urlencoded({ extended: false }));
 
 // Register routes
 app.use('/', indexRouter);
-app.use('/test', testDatabaseRouter);
-
+app.use('/exercises', exercisesRouter);
+app.use('/muscles', musclesRouter);
+app.use('/force-types', forceTypesRouter);
+app.use('/levels', levelsRouter);
+app.use('/mechanics', mechanicsRouter);
+app.use('/equipment', equipmentRouter);
+app.use('/categories', categoriesRouter);
 
 // 404 handler
 app.use(function(req, res, next) {

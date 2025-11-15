@@ -18,6 +18,13 @@ router.get('/', function(req, res, next) {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      exercises: '/exercises',
+      muscles: '/muscles',
+      forceTypes: '/force-types',
+      levels: '/levels',
+      mechanics: '/mechanics',
+      equipment: '/equipment',
+      categories: '/categories'
     }
   });
 });
