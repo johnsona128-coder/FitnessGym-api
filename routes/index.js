@@ -19,6 +19,7 @@ router.get('/', function(req, res, next) {
     endpoints: {
       health: '/health',
       exercises: '/exercises',
+      instructions: '/exercises',
       muscles: '/muscles',
       forceTypes: '/force-types',
       levels: '/levels',
