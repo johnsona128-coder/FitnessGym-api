@@ -213,7 +213,7 @@ INSERT INTO exercise_images (exercise_id, image_path) VALUES
 (9,'Air_Bike.mp4'),
 (10,'Alternating_Dumbbell_Bench_Press.mp4');
 
-CREATE VIEW primary_muscle_group AS (
+CREATE VIEW primary_muscle_groups AS (
 Select epm.exercise_id,
 e.exercise_name,
 epm.muscle_id,
@@ -223,7 +223,7 @@ LEFT JOIN exercises e on epm.exercise_id = e.id
 LEFT JOIN muscles m on epm.muscle_id = m.id
 );
 
-CREATE VIEW secondary_muscle_group AS (
+CREATE VIEW secondary_muscle_groups AS (
 Select esm.exercise_id,
 e.exercise_name,
 esm.muscle_id,
