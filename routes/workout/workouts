@@ -5,13 +5,13 @@ const cors = require('cors');
 const { normalizeRows } = require("../components/normalizeKeys");
 
 const corsOptions = {
-  origin: '*',
-  optionsSuccessStatus: 200
+    origin: '*',
+    optionsSuccessStatus: 200
 };
 
 // GET all workouts
-router.get('/', cors(corsOptions), function(req, res, next) {
-  const query = `
+router.get('/', cors(corsOptions), function (req, res, next) {
+    const query = `
   Select CONCAT(first_name, ' ', last_name) as member_name,
         m.id
         workout_date,
@@ -21,22 +21,22 @@ router.get('/', cors(corsOptions), function(req, res, next) {
         ON m.id = mwo.member_id
         Order by workout_date
    `;
-  connection.query(query, function(err, results, fields) {
-    if (!err) {
-      res.json({
-        success: true,
-        data: results
-      });
-    } else {
-      next(err);
-    }
-  });
+    connection.query(query, function (err, results, fields) {
+        if (!err) {
+            res.json({
+                success: true,
+                data: results
+            });
+        } else {
+            next(err);
+        }
+    });
 });
 
 // GET all workouts for a member
-router.get('/:id', cors(corsOptions), function(req, res, next) {
-  const id = req.params.id;
-  const query = `
+router.get('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const query = `
   Select CONCAT(first_name, ' ', last_name) as member_name,
         m.id
         workout_date,
@@ -47,30 +47,30 @@ router.get('/:id', cors(corsOptions), function(req, res, next) {
         Where m.id = ?
         Order by workout_date
    `;
-  connection.query(query, [id], function(err, results, fields) {
-    if (!err) {
-      if (results.length === 0) {
-        res.status(404).json({
-          success: false,
-          message: 'Member Workout not found'
-        });
-      } else {
-        const normalized = normalizeRows(results);
-        res.json({
-          success: true,
-          data: normalized
-        });
-      }
-    } else {
-      next(err);
-    }
-  });
+    connection.query(query, [id], function (err, results, fields) {
+        if (!err) {
+            if (results.length === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Member Workout not found'
+                });
+            } else {
+                const normalized = normalizeRows(results);
+                res.json({
+                    success: true,
+                    data: normalized
+                });
+            }
+        } else {
+            next(err);
+        }
+    });
 });
 
 // GET a specific member workout
-router.get('/memberWorkout/:id', cors(corsOptions), function(req, res, next) {
-  const id = req.params.id;
-  const query = `
+router.get('/memberWorkout/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const query = `
     Select 
         workout_id,
         exercise_id,
@@ -83,100 +83,189 @@ router.get('/memberWorkout/:id', cors(corsOptions), function(req, res, next) {
         Where mwod.workout_id = ?
 
   `;
-  
-  connection.query(query, [id], function(err, results, fields) {
-    if (!err) {
-      if (results.length === 0) {
-        res.status(404).json({
-          success: false,
-          message: 'Workout not found'
-        });
-      } else {
-        const normalized = normalizeRows(results);
-        res.json({
-          success: true,
-          data: normalized
-        });
-      }
-    } else {
-      next(err);
-    }
-  });
+
+    connection.query(query, [id], function (err, results, fields) {
+        if (!err) {
+            if (results.length === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Workout not found'
+                });
+            } else {
+                const normalized = normalizeRows(results);
+                res.json({
+                    success: true,
+                    data: normalized
+                });
+            }
+        } else {
+            next(err);
+        }
+    });
 });
 
 // POST create a workout
-router.post('/', cors(corsOptions), function(req, res, next) {
-  const { memberId,WorkoutDate,notes } = req.body;
-  
-  connection.query(
-    'INSERT INTO memberWorkOut (member_id,workout_date,notes) VALUES (?,?,?)',
-    [muscle_name],
-    function(err, result, fields) {
-      if (!err) {
-        res.status(201).json({
-          success: true,
-          message: 'Workout created successfully',
-          data: {
-            id: result.insertId,
-            muscle_name
-          }
-        });
-      } else {
-        next(err);
-      }
-    }
-  );
+router.post('/', cors(corsOptions), function (req, res, next) {
+    const { memberId, WorkoutDate, notes } = req.body;
+
+    connection.query(
+        'INSERT INTO memberWorkOut (member_id,workout_date,notes) VALUES (?,?,?)',
+        [memberId, WorkoutDate, notes],
+        function (err, result, fields) {
+            if (!err) {
+                res.status(201).json({
+                    success: true,
+                    message: 'Workout created successfully',
+                    data: {
+                        id: result.insertId,
+                        muscle_name
+                    }
+                });
+            } else {
+                next(err);
+            }
+        }
+    );
+});
+
+
+// POST Add workout details
+router.post('/:id/workoutDetails' / workoutDetails, cors(corsOptions), function (req, res, next) {
+    const { workoutId, exerciseId, setNum, repNum, weight } = req.body;
+
+    connection.query(
+        'INSERT INTO memberWorkOutDetails (workout_id,exercise_id,set_num, rep_num, weight) VALUES (?,?,?)',
+        [workoutId, exerciseId, setNum, repNum, weight],
+        function (err, result, fields) {
+            if (!err) {
+                res.status(201).json({
+                    success: true,
+                    message: 'Workout Details created successfully',
+                    data: {
+                        id: result.insertId,
+                        muscle_name
+                    }
+                });
+            } else {
+                next(err);
+            }
+        }
+    );
 });
 
 // Update a workout
-router.put('/:id', cors(corsOptions), function(req, res, next) {
-  const id = req.params.id;
-  const { workoutId,WorkoutDate,notes } = req.body;
-  
-  connection.query(
-    'UPDATE memberWorkOut SET workout_date = ?,notes=? WHERE id = ?',
-    [muscle_name, id],
-    function(err, result, fields) {
-      if (!err) {
-        if (result.affectedRows === 0) {
-          res.status(404).json({
-            success: false,
-            message: 'Workout not found'
-          });
-        } else {
-          res.json({
-            success: true,
-            message: 'Workout updated successfully'
-          });
+router.put('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const { workoutId, WorkoutDate, notes } = req.body;
+
+    connection.query(
+        'UPDATE memberWorkOut SET workout_date = ?,notes=? WHERE id = ?',
+        [WorkoutDate, notes, id],
+        function (err, result, fields) {
+            if (!err) {
+                if (result.affectedRows === 0) {
+                    res.status(404).json({
+                        success: false,
+                        message: 'Workout not found'
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        message: 'Workout updated successfully'
+                    });
+                }
+            } else {
+                next(err);
+            }
         }
-      } else {
-        next(err);
-      }
-    }
-  );
+    );
 });
 
-// DELETE a workout
-router.delete('/:id', cors(corsOptions), function(req, res, next) {
-  const id = req.params.id;
-  
-  connection.query('DELETE FROM memberWorkOut WHERE id = ?', [id], function(err, result, fields) {
-    if (!err) {
-      if (result.affectedRows === 0) {
-        res.status(404).json({
-          success: false,
-          message: 'Workout not found'
+// Update a workout details
+router.put('/workoutDetails:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const { exerciseId, setNum, repNum, weight } = req.body;
+    const query = `UPDATE memberWorkOutDetails
+                    SET exercise_id= ?,
+                    set_num= ?, 
+                    rep_num= ?, 
+                    weight= ?
+                    WHERE id = ?
+  `;
+
+    connection.query(
+        query,
+        [exerciseId, setNum, repNum, weight, id],
+        function (err, result, fields) {
+            if (!err) {
+                if (result.affectedRows === 0) {
+                    res.status(404).json({
+                        success: false,
+                        message: 'Workout detail not found'
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        message: 'Workout detail updated successfully'
+                    });
+                }
+            } else {
+                next(err);
+            }
+        }
+    );
+});
+
+
+// DELETE a workout and its details
+router.delete('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+
+    connection.beginTransaction(function (err) {
+        if (err) {
+            return next(err);
+        }
+
+        // Delete workout details first because of data constraints
+        connection.query('DELETE FROM memberWorkOutDetails WHERE workout_id = ?', [id], function (err, result) {
+            if (err) {
+                return connection.rollback(function () {
+                    next(err);
+                });
+            }
+
+            // Then delete the workout
+            connection.query('DELETE FROM memberWorkOut WHERE id = ?', [id], function (err, result) {
+                if (err) {
+                    return connection.rollback(function () {
+                        next(err);
+                    });
+                }
+
+                if (result.affectedRows === 0) {
+                    return connection.rollback(function () {
+                        res.status(404).json({
+                            success: false,
+                            message: 'Workout not found'
+                        });
+                    });
+                }
+
+                connection.commit(function (err) {
+                    if (err) {
+                        return connection.rollback(function () {
+                            next(err);
+                        });
+                    }
+
+                    res.json({
+                        success: true,
+                        message: 'Workout and details deleted successfully'
+                    });
+                });
+            });
         });
-      } else {
-        res.json({
-          success: true,
-          message: 'Workout deleted successfully'
-        });
-      }
-    } else {
-      next(err);
-    }
-  });
+    });
 });
 
 module.exports = router;
