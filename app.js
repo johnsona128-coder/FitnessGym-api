@@ -18,6 +18,7 @@ const mechanicsRouter = require('./routes/exercise/mechanics');
 const equipmentRouter = require('./routes/exercise/equipment');
 const categoriesRouter = require('./routes/exercise/categories');
 const workoutsRouter = require('./routes/workout/workouts');
+const membersRouter = require('./routes/profile/members');
 
 // Middleware
 app.use(cors());
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Register routes
 app.use('/', indexRouter);
+app.use('/members', membersRouter);
 app.use('/exercises', exercisesRouter);
 app.use('/muscles', musclesRouter);
 app.use('/force-types', forceTypesRouter);

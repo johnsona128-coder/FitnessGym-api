@@ -104,46 +104,114 @@ router.get('/memberWorkout/:id', cors(corsOptions), function (req, res, next) {
     });
 });
 
-// POST create a workout
+// POST create a workout with details
 router.post('/', cors(corsOptions), function (req, res, next) {
-    const { memberId, WorkoutDate, notes } = req.body;
+    const { memberId, WorkoutDate, notes, details } = req.body;
 
-    connection.query(
-        'INSERT INTO memberWorkOut (member_id,workout_date,notes) VALUES (?,?,?)',
-        [memberId, WorkoutDate, notes],
-        function (err, result, fields) {
-            if (!err) {
-                res.status(201).json({
-                    success: true,
-                    message: 'Workout created successfully',
-                    data: {
-                        id: result.insertId,
-                        muscle_name
-                    }
-                });
-            } else {
-                next(err);
-            }
+    connection.beginTransaction(function (err) {
+        if (err) {
+            return next(err);
         }
-    );
+
+        // First, insert the workout
+        connection.query(
+            'INSERT INTO memberWorkOut (member_id, workout_date, notes) VALUES (?, ?, ?)',
+            [memberId, WorkoutDate, notes],
+            function (err, result) {
+                if (err) {
+                    return connection.rollback(function () {
+                        next(err);
+                    });
+                }
+
+                const workoutId = result.insertId;
+
+                // If there are no details, just commit and return
+                if (!details || details.length === 0) {
+                    return connection.commit(function (err) {
+                        if (err) {
+                            return connection.rollback(function () {
+                                next(err);
+                            });
+                        }
+
+                        res.status(201).json({
+                            success: true,
+                            message: 'Workout created successfully',
+                            data: {
+                                id: workoutId,
+                                memberId,
+                                WorkoutDate,
+                                notes
+                            }
+                        });
+                    });
+                }
+
+                // Insert workout details
+                const detailsValues = details.map(detail => [
+                    workoutId,
+                    detail.exerciseId,
+                    detail.sets,
+                    detail.reps,
+                    detail.weight
+                ]);
+
+                connection.query(
+                    'INSERT INTO memberWorkOutDetails (workout_id, exercise_id, set_num, rep_num, weight) VALUES ?',
+                    [detailsValues],
+                    function (err, detailsResult) {
+                        if (err) {
+                            return connection.rollback(function () {
+                                next(err);
+                            });
+                        }
+
+                        connection.commit(function (err) {
+                            if (err) {
+                                return connection.rollback(function () {
+                                    next(err);
+                                });
+                            }
+
+                            res.status(201).json({
+                                success: true,
+                                message: 'Workout and details created successfully',
+                                data: {
+                                    id: workoutId,
+                                    memberId,
+                                    WorkoutDate,
+                                    notes,
+                                    detailsCount: detailsResult.affectedRows
+                                }
+                            });
+                        });
+                    }
+                );
+            }
+        );
+    });
 });
 
-
-// POST Add workout details
-router.post('/:id/workoutDetails' / workoutDetails, cors(corsOptions), function (req, res, next) {
-    const { workoutId, exerciseId, setNum, repNum, weight } = req.body;
+router.post('/:id/workoutDetails', cors(corsOptions), function (req, res, next) {
+    const workoutId = req.params.id;
+    const { exerciseId, setNum, repNum, weight } = req.body;
 
     connection.query(
-        'INSERT INTO memberWorkOutDetails (workout_id,exercise_id,set_num, rep_num, weight) VALUES (?,?,?)',
+        'INSERT INTO memberWorkOutDetails (workout_id, exercise_id, set_num, rep_num, weight) VALUES (?, ?, ?, ?, ?)',
         [workoutId, exerciseId, setNum, repNum, weight],
-        function (err, result, fields) {
+        function (err, result) {
             if (!err) {
                 res.status(201).json({
                     success: true,
                     message: 'Workout Details created successfully',
                     data: {
                         id: result.insertId,
-                        muscle_name
+                        workoutId,
+                        exerciseId,
+                        setNum,
+                        repNum,
+                        weight
                     }
                 });
             } else {
