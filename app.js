@@ -17,6 +17,7 @@ const levelsRouter = require('./routes/exercise/levels');
 const mechanicsRouter = require('./routes/exercise/mechanics');
 const equipmentRouter = require('./routes/exercise/equipment');
 const categoriesRouter = require('./routes/exercise/categories');
+const workoutsRouter = require('./routes/workout/workouts');
 
 // Middleware
 app.use(cors());
@@ -32,6 +33,7 @@ app.use('/levels', levelsRouter);
 app.use('/mechanics', mechanicsRouter);
 app.use('/equipment', equipmentRouter);
 app.use('/categories', categoriesRouter);
+app.use('/workouts', workoutsRouter);
 
 
 // 404 handler
