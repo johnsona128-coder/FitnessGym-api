@@ -1,0 +1,83 @@
+const express = require('express');
+const router = express.Router();
+const connection = require('../../db');
+const cors = require('cors');
+const { normalizeRows } = require("../components/normalizeKeys");
+
+const corsOptions = {
+  origin: '*',
+  optionsSuccessStatus: 200
+};
+
+// GET all worksout for a member
+router.get('/', cors(corsOptions), function (req, res, next) {
+  const query = `
+    Select CONCAT(first_name, ' ', last_name) as member_name,
+        workout_date,
+        notes
+        FROM members m
+        LEFT JOIN memberWorkOut mwo
+        ON m.id = mwo.member_id
+        Order by workout_date;
+
+  `;
+
+  connection.query(query, function (err, results, fields) {
+    if (!err) {
+
+      if (results.length === 0) {
+        res.status(404).json({
+          success: false,
+          message: 'No Workouts found'
+        });
+      } else {
+
+        const normalized = normalizeRows(results);
+
+
+        res.json({normalized});
+      }
+    }
+
+  });
+});
+
+router.get('/:id', cors(corsOptions), function (req, res, next) {
+  const id = req.params.id;
+  const query = `
+    Select 
+        workout_id,
+        exercise_id,
+        set_num,
+        rep_num,
+        weight
+        FROM memberWorkOutDetails mwod
+        LEFT JOIN exercises e
+        ON e.id = mwod.exercise_id
+        Where mwod.workout_id, = ?
+
+  `;
+
+  connection.query(query, function (err, results, fields) {
+    if (!err) {
+
+      if (results.length === 0) {
+        res.status(404).json({
+          success: false,
+          message: 'Workout Details not found'
+        });
+      } else {
+
+        const normalized = normalizeRows(results);
+
+
+        res.json({normalized});
+      }
+    }
+
+  });
+});
+
+
+
+module.exports = router;
