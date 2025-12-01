@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const connection = require('../../db');
 const cors = require('cors');
-const { normalizeRows } = require("../utils/normalizeKeys");
+const { normalizeRows } = require("../components/normalizeKeys");
 
 const corsOptions = {
   origin: '*',
@@ -15,15 +15,13 @@ router.get('/', cors(corsOptions), function (req, res, next) {
     SELECT 
       e.*,
       GROUP_CONCAT(DISTINCT pm.muscle_name) as primary_muscles,
-      GROUP_CONCAT(DISTINCT sm.muscle_name) as secondary_muscles,
-      ei.image_path as videoUrl
+      GROUP_CONCAT(DISTINCT sm.muscle_name) as secondary_muscles
     FROM exercises e
     LEFT JOIN exercise_primary_muscles epm ON e.id = epm.exercise_id
     LEFT JOIN muscles pm ON epm.muscle_id = pm.id
     LEFT JOIN exercise_secondary_muscles esm ON e.id = esm.exercise_id
     LEFT JOIN muscles sm ON esm.muscle_id = sm.id
-    LEFT JOIN exercise_images ei on e.id = ei.exercise_id
-    GROUP BY e.id, ei.exercise_id, ei.image_path
+    GROUP BY e.id
   `;
 
   connection.query(query, function (err, results, fields) {
@@ -185,6 +183,41 @@ router.get('/:id/instructions', cors(corsOptions), function (req, res, next) {
     }
   });
 });
+
+// GET images for an exercise
+router.get('/:id/photos', cors(corsOptions), function (req, res, next) {
+  const id = req.params.id;
+
+
+  const query = `
+    Select ei.exercise_id, ei.display_order, concat('images/',image_path) as imagePath, e.exercise_name as exerciseName FROM exercise_images ei  
+    LEFT JOIN exercises e on ei.exercise_id = e.id
+    Where exercise_id = ? and ei.display_order = 1
+    ORDER BY ei.display_order
+  `;
+
+  connection.query(query, [id], function (err, results, fields) {
+    if (!err) {
+      if (results.length === 0) {
+        res.status(404).json({
+          success: false,
+          message: 'No Exercise Photos not found'
+        });
+      } else {
+        const normalized = normalizeRows(results);
+
+        res.json({
+          success: true,
+          data: normalized
+        });
+      }
+
+    } else {
+      next(err);
+    }
+  });
+});
+
 
 // GET exercises details
 router.get('/equipment/:equipment', cors(corsOptions), function (req, res, next) {

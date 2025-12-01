@@ -194,24 +194,37 @@ INSERT INTO exercise_instructions (exercise_id, step_number, instruction) VALUES
 (10,3,'Lower that dumbbell and press the other one.'),
 (10,4,'Continue alternating for the session.');
 
+
+
 CREATE TABLE exercise_images (
     id INT AUTO_INCREMENT PRIMARY KEY,
     exercise_id INT NOT NULL,
+    display_order INT NOT NULL,
     image_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id)
 );
 
-INSERT INTO exercise_images (exercise_id, image_path) VALUES
-(1,'3_4_Sit-Up.mp4'),
-(2,'90_90_Hamstring.mp4'),
-(3,'Abdominal_Bench_Crunch.mp4'),
-(4,'Abdominal_Crossover.mp4'),
-(5,'Abdominal_Hip_Raise.mp4'),
-(6,'Abdominal_Roller.mp4'),
-(7,'Abs_Roller.mp4'),
-(8,'Agility_Ladder.mp4'),
-(9,'Air_Bike.mp4'),
-(10,'Alternating_Dumbbell_Bench_Press.mp4');
+INSERT INTO exercise_images (exercise_id, display_order, image_path) VALUES
+(1,1,'1_3_4_Sit‑Up.png'),
+(1,2,'2_3_4_Sit‑Up.png'),
+(2,1,'1_90_90_Hamstring.png'),
+(2,2,'2_90_90_Hamstring.png'),
+(3,1,'1_Abdominal_Bench_Crunch.png'),
+(3,2,'2_Abdominal_Bench_Crunch.png'),
+(4,1,'1_Abdominal_Crossover.png'),
+(4,2,'2_Abdominal_Crossover.png'),
+(5,1,'1_Abdominal_Hip_Raise.png'),
+(5,2,'2_Abdominal_Hip_Raise.png'),
+(6,1,'1_Abdominal_Roller.png'),
+(6,2,'2_Abdominal_Roller.png'),
+(7,1,'1_Abs_Roller.png'),
+(7,2,'2_Abs_Roller.png'),
+(8,1,'1_Agility_Ladder.png'),
+(8,2,'2_Agility_Ladder.png'),
+(9,1,'1_Air_Bike.png'),
+(9,2,'2_Air_Bike.png'),
+(10,1,'1_Alternating_Dumbbell_Bench_Press.png'),
+(10,2,'2_Alternating_Dumbbell_Bench_Press.png');
 
 CREATE VIEW primary_muscle_groups AS (
 Select epm.exercise_id,
