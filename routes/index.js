@@ -25,7 +25,9 @@ router.get('/', function(req, res, next) {
       levels: '/levels',
       mechanics: '/mechanics',
       equipment: '/equipment',
-      categories: '/categories'
+      categories: '/categories',
+      workouts:  '/workouts',
+      members:  '/members'
     }
   });
 });
