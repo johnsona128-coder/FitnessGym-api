@@ -1,0 +1,193 @@
+const express = require('express');
+const router = express.Router();
+const connection = require('../../db');
+const cors = require('cors');
+const { normalizeRows } = require("../components/normalizeKeys");
+
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200
+};
+
+// GET all assessments
+router.get('/', cors(corsOptions), function (req, res, next) {
+    const query = `
+        SELECT CONCAT(first_name, ' ', last_name) as member_name,
+            m.id,
+            ma.id as assessment_id,
+            fitness_level,
+            goals,
+            injuries,
+            assessment_date
+        FROM members m
+        LEFT JOIN memberAssessments ma
+        ON m.id = ma.member_id
+        ORDER BY assessment_date DESC
+    `;
+    connection.query(query, function (err, results, fields) {
+        if (!err) {
+            const normalized = normalizeRows(results);
+            res.json({
+                success: true,
+                data: normalized
+            });
+        } else {
+            next(err);
+        }
+    });
+});
+
+// GET all assessments for a specific member
+router.get('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const query = `
+        SELECT CONCAT(first_name, ' ', last_name) as member_name,
+            m.id,
+            ma.id as assessment_id,
+            fitness_level,
+            goals,
+            injuries,
+            assessment_date
+        FROM members m
+        LEFT JOIN memberAssessments ma
+        ON m.id = ma.member_id
+        WHERE m.id = ?
+        ORDER BY assessment_date DESC
+    `;
+    connection.query(query, [id], function (err, results, fields) {
+        if (!err) {
+            if (results.length === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Member assessments not found'
+                });
+            } else {
+                const normalized = normalizeRows(results);
+                res.json({
+                    success: true,
+                    data: normalized
+                });
+            }
+        } else {
+            next(err);
+        }
+    });
+});
+
+// GET a specific assessment by assessment ID
+router.get('/assessment/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const query = `
+        SELECT CONCAT(first_name, ' ', last_name) as member_name,
+            m.id as member_id,
+            ma.id as assessment_id,
+            fitness_level,
+            goals,
+            injuries,
+            assessment_date
+        FROM memberAssessments ma
+        LEFT JOIN members m
+        ON m.id = ma.member_id
+        WHERE ma.id = ?
+    `;
+
+    connection.query(query, [id], function (err, results, fields) {
+        if (!err) {
+            if (results.length === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Assessment not found'
+                });
+            } else {
+                const normalized = normalizeRows(results);
+                res.json({
+                    success: true,
+                    data: normalized[0]
+                });
+            }
+        } else {
+            next(err);
+        }
+    });
+});
+
+// POST create a new assessment
+router.post('/', cors(corsOptions), function (req, res, next) {
+    const { memberId, fitnessLevel, goals, injuries, assessmentDate } = req.body;
+
+    connection.query(
+        'INSERT INTO memberAssessments (member_id, fitness_level, goals, injuries, assessment_date) VALUES (?, ?, ?, ?, ?)',
+        [memberId, fitnessLevel, goals, injuries, assessmentDate],
+        function (err, result) {
+            if (!err) {
+                res.status(201).json({
+                    success: true,
+                    message: 'Assessment created successfully',
+                    data: {
+                        id: result.insertId,
+                        memberId,
+                        fitnessLevel,
+                        goals,
+                        injuries,
+                        assessmentDate
+                    }
+                });
+            } else {
+                next(err);
+            }
+        }
+    );
+});
+
+// PUT update an assessment
+router.put('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+    const { fitnessLevel, goals, injuries, assessmentDate } = req.body;
+
+    connection.query(
+        'UPDATE memberAssessments SET fitness_level = ?, goals = ?, injuries = ?, assessment_date = ? WHERE id = ?',
+        [fitnessLevel, goals, injuries, assessmentDate, id],
+        function (err, result, fields) {
+            if (!err) {
+                if (result.affectedRows === 0) {
+                    res.status(404).json({
+                        success: false,
+                        message: 'Assessment not found'
+                    });
+                } else {
+                    res.json({
+                        success: true,
+                        message: 'Assessment updated successfully'
+                    });
+                }
+            } else {
+                next(err);
+            }
+        }
+    );
+});
+
+// DELETE an assessment
+router.delete('/:id', cors(corsOptions), function (req, res, next) {
+    const id = req.params.id;
+
+    connection.query('DELETE FROM memberAssessments WHERE id = ?', [id], function (err, result) {
+        if (!err) {
+            if (result.affectedRows === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Assessment not found'
+                });
+            } else {
+                res.json({
+                    success: true,
+                    message: 'Assessment deleted successfully'
+                });
+            }
+        } else {
+            next(err);
+        }
+    });
+});
+
+module.exports = router;

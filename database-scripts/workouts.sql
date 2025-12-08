@@ -1,3 +1,5 @@
+Select version;
+
 CREATE DATABASE IF NOT EXISTS gym_tracker;
 USE gym_tracker;
 
@@ -41,6 +43,9 @@ CREATE TABLE IF NOT EXISTS memberWorkOutDetails (
     FOREIGN KEY (workout_id) REFERENCES memberWorkOut(id)
 );
 
+INSERT INTO memberWorkOutDetails (workout_id,exercise_id,set_num, rep_num, weight) VALUES
+(1,10,3,10,50);
+
 Select CONCAT(first_name, ' ', last_name) as member_name,
 workout_date,
 notes
@@ -49,12 +54,14 @@ LEFT JOIN memberWorkOut mwo
 ON m.id = mwo.member_id
 Order by workout_date;
 
-Select 
-workout_id,
-exercise_id,
-set_num,
-rep_num,
-weight
-FROM memberWorkOutDetails mwod
-LEFT JOIN exercises e
-ON e.id = mwod.exercise_id
+   Select 
+        workout_id,
+        exercise_id,
+        set_num,
+        rep_num,
+        weight
+        FROM memberWorkOutDetails mwod
+        LEFT JOIN exercises e
+        ON e.id = mwod.exercise_id;
+        
+        Select * FROM memberWorkOutDetails
